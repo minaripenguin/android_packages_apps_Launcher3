@@ -350,4 +350,7 @@
 
     <!-- QSB -->
     <string name="qsb_search_hint">Search this phone and more…</string>
+
+    <!-- Shake Clear Recents -->
+    <string name="shake_clear_summary">Or Shake phone to clear recents</string>
 </resources>
