@@ -160,7 +160,13 @@ public class ActivityAllAppsContainerView<T extends Context & AppLauncher
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mSearchContainer = findViewById(R.id.search_container_all_apps);        
+
+        mSearchContainer = findViewById(R.id.search_container_all_apps);
+        if (Utilities.showSearch(getContext())) {
+            mSearchContainer.setVisibility(View.VISIBLE);
+        } else {
+            mSearchContainer.setVisibility(View.GONE);
+        }        
 
         if (!Utilities.isThemedIconsEnabled(getContext())) {
           getSearchView().setBackgroundResource(R.drawable.bg_all_apps_searchbox_google);
