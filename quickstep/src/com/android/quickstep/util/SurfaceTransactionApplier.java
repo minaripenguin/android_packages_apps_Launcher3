@@ -51,7 +51,8 @@ public class SurfaceTransactionApplier extends ReleaseCheck {
      */
     public SurfaceTransactionApplier(View targetView) {
         mTargetViewRootImpl = targetView.getViewRootImpl();
-        mBarrierSurfaceControl = mTargetViewRootImpl.getSurfaceControl();
+        mBarrierSurfaceControl =
+                mTargetViewRootImpl != null ? mTargetViewRootImpl.getSurfaceControl() : null;
         mApplyHandler = new Handler(this::onApplyMessage);
         setCanRelease(true);
     }
@@ -71,6 +72,9 @@ public class SurfaceTransactionApplier extends ReleaseCheck {
      *               this method to avoid synchronization issues.
      */
     public void scheduleApply(final SurfaceParams... params) {
+        if (mTargetViewRootImpl == null) {
+            return;
+        }
         View view = mTargetViewRootImpl.getView();
         if (view == null) {
             return;
