@@ -52,17 +52,6 @@
                 android:src="@drawable/ic_lens_color" />
 
         </LinearLayout>
-
-           <TextView
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:layout_gravity="start|center"
-               android:gravity="start|center"
-               android:padding="@dimen/qsb_icon_padding"
-               android:layout_marginStart="51dp"
-               android:textSize="14sp"
-               android:textColor="?searchHintHighlight"
-               android:text="@string/qsb_search_hint" />
                
         <ImageView
             android:id="@+id/g_icon"
