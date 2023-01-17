@@ -113,7 +113,7 @@
     <string name="show_quickspace_title">Самае галоўнае</string>
     <string name="show_quickspace_summary">Паказваць у верхняй частцы экрана</string>
     <!-- QuickSpace: QuickEvent: Device Intro Event -->
-    <string name="quick_event_rom_intro_welcome">Сардэчна запрашаем у crDroid!</string>
+    <string name="quick_event_rom_intro_welcome">Сардэчна запрашаем у riceDroid!</string>
     <string-array name="welcome_message_variants">
         <item>Добрага дня</item>
         <item>Дзякуй, што выбралі нас</item>
@@ -177,12 +177,12 @@
         <item>О, прывітанне, што здарылася?</item>
         <item>Засяродзьцеся на сваіх задачах</item>
         <item>Колькі скрыншотаў вы зрабілі?</item>
-        <item>Адкрыйце дабро з crDroid</item>
+        <item>Адкрыйце дабро з riceDroid</item>
         <item>Распаўсюджвайце любоў, а не хаос</item>
         <item>Не мы распальвалі пажар!</item>
         <item>Час для добрай музыкі</item>
         <item>\u003C\u003C\u003C\u003C\u003C\u003C\u003C ГАЛАВА</item>
-        <item>Для гэтага вам патрэбен crDroid Premium</item>
+        <item>Для гэтага вам патрэбен riceDroid Premium</item>
         <item>Памятайце Lineage і Unicorn</item>
         <item>Атрымлівайце асалоду ад тэрміну службы батарэі</item>
         <item>Пачынаючы з нуля</item>
