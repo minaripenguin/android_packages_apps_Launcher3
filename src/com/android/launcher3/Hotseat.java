@@ -174,7 +174,7 @@ public class Hotseat extends CellLayout implements Insettable {
 
         DeviceProfile dp = mActivity.getDeviceProfile();
         
-        int qsbWidth = dp.isQsbInline
+        int qsbWidth = dp.isQsbInline && dp.isTablet
                 ? dp.hotseatQsbWidth
                 : getShortcutsAndWidgets().getMeasuredWidth();
 
