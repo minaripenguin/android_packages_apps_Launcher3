@@ -347,4 +347,7 @@
     <!-- Restart launcher -->
     <string name="pref_restart_title">Restart</string>
     <string name="pref_restart_summary">Restart the launcher</string>
+
+   <!-- Recents Scroll Vibration -->
+    <string name="pref_recents_vibration_title">Enable haptic feedback on recents scroll</string>
 </resources>
