@@ -113,7 +113,7 @@
     <string name="show_quickspace_title">Bir Bakışta</string>
     <string name="show_quickspace_summary">Ana ekranınızın üst kısmında göster</string>
     <!-- QuickSpace: QuickEvent: Device Intro Event -->
-    <string name="quick_event_rom_intro_welcome">CrDroid\'e hoş geldiniz!</string>
+    <string name="quick_event_rom_intro_welcome">riceDroid\'e hoş geldiniz!</string>
     <string-array name="welcome_message_variants">
         <item>İyi günler</item>
         <item>Bizi seçtiğiniz için teşekkürler</item>
@@ -236,4 +236,34 @@
     <string name="icon_pack_default_label">Varsayılan</string>
     <string name="icon_pack_add">Daha fazla yükle</string>
     <string name="icon_pack_no_market">Kullanılabilir uygulama mağazası yok</string>
+    <!-- Kill App recents action shortcut -->
+    <string name="recent_task_option_kill_app">Uygulamayı sonlandır</string>
+    <string name="recents_app_killed">Uygulama sonlandırıldı</string>
+
+    <!-- Memory info -->
+    <string name="meminfo_text">%1$s Mevcut | %2$s Toplam</string>
+    <string name="recents_meminfo_title">Bellek bilgisi</string>
+    
+    <!-- QSB -->
+    <string name="qsb_search_hint">Telefonunuzu ve daha fazlasını arayın</string>
+
+    <!-- App drawer searchbar -->
+    <string name="drawer_search_title">Uygulama arama çubuğu</string>
+    <string name="drawer_search_summary">Uygulama çekmecesinin üstünde arama çubuğu</string>
+
+    <!-- About info -->
+    <string name="about_rice_title" translatable="false">Sushi Launcher</string>
+    <string name="about_thanks_cat">Teşekkürler</string>
+    <string name="about">Hakkında</string>
+    <string name="about_summary">Sushi Launcher hakkında bilgiler</string>
+    <string name="about_app_version">Sürüm 2.0</string>
+
+    <!-- Restart launcher -->
+    <string name="pref_restart_title">Yeniden başlat</string>
+    <string name="pref_restart_summary">Başlatıcıyı yeniden başlat</string>
+
+   <!-- Recents Scroll Vibration -->
+    <string name="pref_recents_vibration_title">Son uygulama kaydırma titreşimi</string>
+    
+    <string name="recents_kill_app">Uygulamayı sonlandır</string>
 </resources>
