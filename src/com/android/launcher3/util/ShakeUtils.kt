@@ -50,9 +50,6 @@ class ShakeUtils(context: Context) : SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (event == null) {
-            return
-        }
         val curUpdateTime = System.currentTimeMillis()
         // Times between two shakes
         val timeInterval = curUpdateTime - mLastUpdateTime
