@@ -57,7 +57,12 @@
             android:title="@string/allow_wallpaper_zooming"
             android:summary="@string/allow_wallpaper_zooming_summary"
             android:defaultValue="true" />
-
+            
+        <SwitchPreference
+            android:key="shake_homescreen_gesture_torch"
+            android:title="@string/shake_gesture_actions_title"
+            android:summary="@string/shake_gesture_actions_summart"
+            android:defaultValue="false" />
     </PreferenceCategory>
 
     <PreferenceCategory

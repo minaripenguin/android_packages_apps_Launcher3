@@ -351,8 +351,10 @@
     <!-- QSB -->
     <string name="qsb_search_hint">Search this phone and more…</string>
 
-    <!-- Shake Clear Recents -->
+    <!-- Shake Actions -->
     <string name="shake_clear_summary">Or Shake phone to clear recents</string>
+    <string name="shake_gesture_actions_title">Torch Shake gesture</string>
+    <string name="shake_gesture_actions_summart">Shake phone at homescreen to toggle torch</string>
 
     <!-- About info -->
     <string name="about_rice_title" translatable="false">Ortus Launcher</string>

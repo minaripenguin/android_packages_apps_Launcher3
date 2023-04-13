@@ -27,6 +27,10 @@ import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.android.launcher3.util.ShakeUtils;
+
+import com.android.internal.util.rising.systemUtils;
+
 import androidx.annotation.Nullable;
 
 import java.util.function.Consumer;
@@ -34,7 +38,7 @@ import java.util.function.Consumer;
 /**
  * View class that represents the bottom row of the home screen.
  */
-public class Hotseat extends CellLayout implements Insettable {
+public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShakeListener {
 
     // Ratio of empty space, qsb should take up to appear visually centered.
     public static final float QSB_CENTER_FACTOR = .325f;
@@ -47,6 +51,9 @@ public class Hotseat extends CellLayout implements Insettable {
     private Consumer<Boolean> mOnVisibilityAggregatedCallback;
 
     private final View mQsb;
+    
+    private ShakeUtils mShakeUtils;
+    private boolean mIsBinded;
 
     public Hotseat(Context context) {
         this(context, null);
@@ -65,6 +72,9 @@ public class Hotseat extends CellLayout implements Insettable {
             mQsb = LayoutInflater.from(context).inflate(R.layout.empty_view, this, false);
         }
         addView(mQsb);
+        
+        mShakeUtils = new ShakeUtils(context);
+        mIsBinded = false;
     }
 
     /**
@@ -154,12 +164,32 @@ public class Hotseat extends CellLayout implements Insettable {
         return false;
     }
 
+    private void bindShake() {
+        mShakeUtils.bindShakeListener(this);
+    }
+
+    private void unBindShake() {
+        mShakeUtils.unBindShakeListener(this);
+    }
+
     @Override
     public void onVisibilityAggregated(boolean isVisible) {
         super.onVisibilityAggregated(isVisible);
 
         if (mOnVisibilityAggregatedCallback != null) {
             mOnVisibilityAggregatedCallback.accept(isVisible);
+        }
+        
+        boolean mGestureEnabled = Utilities.homeScreenShakeTorch(getContext());
+        
+        if (isVisible && mGestureEnabled) {
+            bindShake();
+            mIsBinded = true;
+        } else {
+            if (mIsBinded) {
+               unBindShake();
+               mIsBinded = false;
+            }
         }
     }
 
@@ -226,6 +256,13 @@ public class Hotseat extends CellLayout implements Insettable {
      */
     public View getQsb() {
         return mQsb;
+    }
+    
+   @Override
+    public void onShake(double speed) {
+    	boolean mGestureEnabled = Utilities.homeScreenShakeTorch(getContext());
+        if (!mGestureEnabled) return;
+        systemUtils.toggleCameraFlash();
     }
 
 }

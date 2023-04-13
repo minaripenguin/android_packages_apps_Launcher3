@@ -114,6 +114,7 @@ public class SettingsHomescreen extends CollapsingToolbarBaseActivity
             case Utilities.KEY_DOCK_MUSIC_SEARCH:
             case Utilities.KEY_HOTSEAT_OPACITY:
             case Utilities.KEY_VIBRATION_TOGGLE:
+            case Utilities.KEY_SHAKE_GESTURES:
                 LauncherAppState.getInstanceNoCreate().setNeedsRestart();
                 break;
             default:
