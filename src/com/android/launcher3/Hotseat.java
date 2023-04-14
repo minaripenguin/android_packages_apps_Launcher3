@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.android.launcher3.util.ShakeUtils;
+import com.android.launcher3.util.VibratorWrapper;
 
 import com.android.internal.util.rising.systemUtils;
 
@@ -262,6 +263,7 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
     public void onShake(double speed) {
     	boolean mGestureEnabled = Utilities.homeScreenShakeTorch(getContext());
         if (!mGestureEnabled) return;
+        VibratorWrapper.INSTANCE.get(mContext).vibrate(VibratorWrapper.EFFECT_CLICK);
         systemUtils.toggleCameraFlash();
     }
 
