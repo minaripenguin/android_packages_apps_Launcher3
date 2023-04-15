@@ -39,14 +39,14 @@ class ShakeUtils(context: Context) : SensorEventListener {
         fun onShake(speed: Double)
     }
 
-    fun bindShakeListener(listener: OnShakeListener?) {
+    fun bindShakeListener(listener: OnShakeListener?, enabled: Boolean) {
         if (listener != null) {
-            mOnShakeListeners?.add(listener)
+            if (enabled) {
+                mOnShakeListeners?.add(listener)
+            } else {
+                mOnShakeListeners?.remove(listener)
+            }
         }
-    }
-
-    fun unBindShakeListener(listener: OnShakeListener) {
-        mOnShakeListeners?.remove(listener)
     }
 
     override fun onSensorChanged(event: SensorEvent) {
@@ -97,10 +97,10 @@ class ShakeUtils(context: Context) : SensorEventListener {
         private const val MIN_SHAKE_INTERVAL = 1024
 
         // Minimal shake speed
-        private const val SPEED_SHAKE_MILLISECONDS = 400
+        private const val SPEED_SHAKE_MILLISECONDS = 512
 
         // Minimal time interval between two shakes
-        private const val SHAKE_INTERVAL_MILLISECOND = 55
+        private const val SHAKE_INTERVAL_MILLISECOND = 64
     }
 
     init {
