@@ -338,6 +338,7 @@
     <!-- Restart launcher -->
     <string name="pref_restart_title">Restart</string>
     <string name="pref_restart_summary">Restart the launcher manually to apply any pending settings</string>
+    <string name="restarting_launcher">Restarting launcher...</string>
 
    <!-- Recents Scroll Vibration -->
     <string name="pref_recents_vibration_title">Enable haptic feedback on recents scroll</string>
