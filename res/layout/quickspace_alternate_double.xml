@@ -26,8 +26,8 @@
         android:orientation="horizontal"
         android:layout_gravity="start|center_vertical"
         android:gravity="start|center_vertical"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp">
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp">
 
             <com.android.launcher3.quickspace.views.DoubleShadowTextView
                 android:id="@+id/extended_greetings"
@@ -64,8 +64,8 @@
         android:orientation="horizontal"
         android:layout_gravity="start|center_vertical"
         android:gravity="start|center_vertical"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp">
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp">
         
             <com.android.launcher3.quickspace.views.DoubleShadowTextView
                 android:id="@+id/extended_greetings_clock"
@@ -75,7 +75,7 @@
                 android:layout_gravity="start|center_vertical"
                 android:textColor="?workspaceAccentColor"
                 android:textSize="@dimen/quickspace_alternate_title_size"
-            	android:paddingEnd="6dp"
+            	android:layout_marginEnd="6dp"
             	android:visibility="gone"
                 launcher:ambientShadowBlur="3dp"
                 launcher:ambientShadowColor="?workspaceAmbientShadowColor"
@@ -113,13 +113,13 @@
             android:clickable="true"
             android:gravity="start|center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingTop="8dp">
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp">
 
             <ImageView
                 android:id="@+id/quick_event_weather_icon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
                 android:layout_gravity="start|center_vertical"
                 android:scaleType="fitXY" />
 
@@ -129,8 +129,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start|center_vertical"
-                android:drawablePadding="8dp"
-                android:paddingStart="6dp"
+                android:layout_marginStart="6dp"
                 android:textColor="?workspaceTextColor"
                 android:textSize="@dimen/quickspace_alternate_subtitle_size"
                 android:letterSpacing="0.01"
@@ -148,13 +147,13 @@
         android:layout_gravity="start|center_vertical"
         android:layout_marginEnd="16dp"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp">
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp">
 
         <ImageView
             android:id="@+id/quick_event_icon_sub"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:layout_gravity="start|center_vertical"
             android:scaleType="fitXY"
             android:layout_weight="0.0" />
@@ -166,7 +165,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start|center_vertical"
             android:layout_weight="1.0"
-            android:drawablePadding="8dp"
             android:visibility="gone"
             android:includeFontPadding="false"
             android:singleLine="true"
@@ -189,8 +187,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start|center_vertical"
             android:layout_weight="1.0"
-            android:drawablePadding="8dp"
-            android:paddingStart="6dp"
+            android:layout_marginStart="6dp"
             android:includeFontPadding="false"
             android:singleLine="true"
             android:scrollHorizontally="true"
