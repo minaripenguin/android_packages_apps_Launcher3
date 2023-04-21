@@ -74,7 +74,8 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
         }
         addView(mQsb);
         
-        mShakeUtils = new ShakeUtils(context);
+        int mGestureIntensity = Utilities.homeScreenShakeTorchIntensity(context);
+        mShakeUtils = new ShakeUtils(context, mGestureIntensity);
         mIsBinded = false;
     }
 
