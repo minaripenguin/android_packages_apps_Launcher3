@@ -58,15 +58,17 @@
             android:summary="@string/allow_wallpaper_zooming_summary"
             android:defaultValue="true" />
             
-        <SwitchPreference
-            android:key="shake_homescreen_gesture_torch"
-            android:title="@string/shake_gesture_actions_title"
-            android:summary="@string/shake_gesture_actions_summart"
-            android:defaultValue="false" />
-            
         <com.android.launcher3.settings.preferences.CustomSeekBarPreference
-            android:key="shake_homescreen_gesture_torch_intensity"
-            android:title="@string/shake_homescreen_gesture_torch_intensity_title"
+            android:key="shake_gestures_actions"
+            android:title="@string/shake_gesture_actions_title"
+            android:persistent="true"
+            android:max="2"
+            android:min="0"
+            android:defaultValue="0" />
+
+        <com.android.launcher3.settings.preferences.CustomSeekBarPreference
+            android:key="shake_gestures_actions_intensity"
+            android:title="@string/shake_gesture_actions_intensity_title"
             android:persistent="true"
             android:max="6"
             android:min="2"

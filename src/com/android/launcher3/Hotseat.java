@@ -17,7 +17,18 @@
 package com.android.launcher3;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
+import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
+import android.media.RemoteControlClient;
+import android.media.RemoteController;
+import android.media.session.MediaSessionLegacyHelper;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.ServiceManager;
+import android.os.SystemClock;
+import android.view.KeyEvent;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -54,29 +65,47 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
     private final View mQsb;
     
     private ShakeUtils mShakeUtils;
-    private boolean mIsBinded;
+    private final AudioManager mAudioManager;
+
+    private boolean mClientIdLost = true;
+    private String mCurrentTrack = null;
+
+    private Metadata mMetadata = new Metadata();
+    private RemoteController mRemoteController;
+    
+    private Context mContext;
+    private int mGestureAction;
+    private int mGestureIntensity;
 
     public Hotseat(Context context) {
         this(context, null);
+        mContext = context;
     }
 
     public Hotseat(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
+         mContext = context;
     }
 
     public Hotseat(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        
+         mContext = context;
 
         if (Utilities.showQSB(context)) {
-            mQsb = LayoutInflater.from(context).inflate(R.layout.search_container_hotseat, this, false);
+            mQsb = LayoutInflater.from(mContext).inflate(R.layout.search_container_hotseat, this, false);
         } else {
-            mQsb = LayoutInflater.from(context).inflate(R.layout.empty_view, this, false);
+            mQsb = LayoutInflater.from(mContext).inflate(R.layout.empty_view, this, false);
         }
         addView(mQsb);
         
-        int mGestureIntensity = Utilities.homeScreenShakeTorchIntensity(context);
-        mShakeUtils = new ShakeUtils(context, mGestureIntensity);
-        mIsBinded = false;
+        mRemoteController = new RemoteController(mContext, mRCClientUpdateListener);
+        mAudioManager = mContext.getSystemService(AudioManager.class);
+        mAudioManager.registerRemoteController(mRemoteController);
+
+	mGestureAction = Utilities.shakeGestureAction(mContext);
+        mGestureIntensity = Utilities.shakeGestureActionIntensity(mContext);
+        mShakeUtils = new ShakeUtils(mContext, mGestureIntensity);
     }
 
     /**
@@ -127,7 +156,7 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
             lp.height = grid.hotseatBarSizePx;
         }
 
-        Rect padding = grid.getHotseatLayoutPadding(getContext());
+        Rect padding = grid.getHotseatLayoutPadding(mContext);
         setPadding(padding.left, padding.top, padding.right, padding.bottom);
         setLayoutParams(lp);
         InsettableFrameLayout.dispatchInsets(this, insets);
@@ -170,13 +199,13 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
     public void onVisibilityAggregated(boolean isVisible) {
         super.onVisibilityAggregated(isVisible);
 
+	
         if (mOnVisibilityAggregatedCallback != null) {
             mOnVisibilityAggregatedCallback.accept(isVisible);
         }
-        
-        boolean mGestureEnabled = isVisible && !mIsBinded && Utilities.homeScreenShakeTorch(getContext());
+
+        boolean mGestureEnabled = Utilities.shakeGestureAction(mContext) != 0;
         mShakeUtils.bindShakeListener(this, mGestureEnabled);
-        mIsBinded = mGestureEnabled;
     }
 
     /** Sets a callback to be called onVisibilityAggregated */
@@ -243,13 +272,93 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
     public View getQsb() {
         return mQsb;
     }
-    
+
+    private boolean isMusicActive() {
+        return mAudioManager != null && mAudioManager.isMusicActive() && mCurrentTrack != null;
+    }
+
+    private void sendMediaButtonClick(int keyCode) {
+        if (!mClientIdLost) {
+            mRemoteController.sendMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
+            mRemoteController.sendMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+        } else {
+            long eventTime = SystemClock.uptimeMillis();
+            KeyEvent key = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0);
+            dispatchMediaKeyWithWakeLockToAudioService(key);
+            dispatchMediaKeyWithWakeLockToAudioService(
+                KeyEvent.changeAction(key, KeyEvent.ACTION_UP));
+        }
+    }
+
+    private void dispatchMediaKeyWithWakeLockToAudioService(KeyEvent event) {
+        MediaSessionLegacyHelper.getHelper(mContext).sendMediaButtonEvent(event, true);
+    }
+
+    private RemoteController.OnClientUpdateListener mRCClientUpdateListener =
+            new RemoteController.OnClientUpdateListener() {
+
+        @Override
+        public void onClientChange(boolean clearing) {
+            if (clearing) {
+                mMetadata.clear();
+                mCurrentTrack = null;
+                mClientIdLost = true;
+            }
+        }
+
+        @Override
+        public void onClientPlaybackStateUpdate(int state, long stateChangeTimeMs,
+                long currentPosMs, float speed) {
+            mClientIdLost = false;
+        }
+
+        @Override
+        public void onClientPlaybackStateUpdate(int state) {
+            mClientIdLost = false;
+        }
+
+
+        @Override
+        public void onClientMetadataUpdate(RemoteController.MetadataEditor data) {
+            mMetadata.trackTitle = data.getString(MediaMetadataRetriever.METADATA_KEY_TITLE,
+                    mMetadata.trackTitle);
+            mClientIdLost = false;
+            if (mMetadata.trackTitle != null
+                    && !mMetadata.trackTitle.equals(mCurrentTrack)) {
+                mCurrentTrack = mMetadata.trackTitle;
+            }
+        }
+
+        @Override
+        public void onClientTransportControlUpdate(int transportControlFlags) {
+        }
+    };
+
+    class Metadata {
+        private String trackTitle;
+
+        public void clear() {
+            trackTitle = null;
+        }
+    }
+
+    public void performShakeAction() {
+        switch (mGestureAction) {
+            case 1:
+                systemUtils.toggleCameraFlash();
+                break;
+            case 2:
+        	sendMediaButtonClick(isMusicActive() ? KeyEvent.KEYCODE_MEDIA_NEXT : KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+        	break;
+            case 0:
+            default:
+                break;
+	}
+    }
    @Override
     public void onShake(double speed) {
-    	boolean mGestureEnabled = Utilities.homeScreenShakeTorch(getContext());
-        if (!mGestureEnabled) return;
-        VibratorWrapper.INSTANCE.get(mContext).vibrate(VibratorWrapper.EFFECT_CLICK);
-        systemUtils.toggleCameraFlash();
+	performShakeAction();
+	VibratorWrapper.INSTANCE.get(mContext).vibrate(VibratorWrapper.EFFECT_CLICK);
     }
 
 }

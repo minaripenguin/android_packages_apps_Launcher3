@@ -356,10 +356,12 @@
 
     <!-- Shake Actions -->
     <string name="shake_clear_summary">Or Shake phone to clear recents</string>
-    <string name="shake_clear_intensity_title">Or Shake phone to clear recents intensity</string>
-    <string name="shake_gesture_actions_title">Torch shake gesture</string>
-    <string name="shake_homescreen_gesture_torch_intensity_title">Torch shake gesture Intensity</string>
-    <string name="shake_gesture_actions_summart">Shake phone at homescreen to toggle torch</string>
+    <string name="shake_clear_intensity_title">Shake phone to clear recents intensity</string>
+    <string name="shake_gesture_actions_title">Shake gesture actions</string>
+    <string name="shake_gesture_actions_intensity_title">Shake gestures Intensity</string>
+    <string name="shake_gestures_disabled">Shake gestures disabled</string>
+    <string name="shake_gestures_torch">Shake device to enable/disable torch</string>
+    <string name="shake_gestures_music">Shake device to play/pause/skip music (depends on playback device)</string>
     
 
     <!-- About info -->
