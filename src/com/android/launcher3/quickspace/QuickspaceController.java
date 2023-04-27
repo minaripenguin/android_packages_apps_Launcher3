@@ -57,7 +57,7 @@ public class QuickspaceController implements NotificationListener.NotificationsC
     private Metadata mMetadata = new Metadata();
     private RemoteController mRemoteController;
     private boolean mClientLost = true;
-    private boolean mMediaActive = false;
+    private String mCurrentTrack = null;
 
     public interface OnDataListener {
         void onDataUpdated();
@@ -66,10 +66,10 @@ public class QuickspaceController implements NotificationListener.NotificationsC
     public QuickspaceController(Context context) {
         mContext = context;
         mHandler = new Handler();
-        mEventsController = new QuickEventsController(context);
-        mWeatherClient = new OmniJawsClient(context);
-        mRemoteController = new RemoteController(context, mRCClientUpdateListener);
-        mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        mEventsController = new QuickEventsController(mContext);
+        mWeatherClient = new OmniJawsClient(mContext);
+        mRemoteController = new RemoteController(mContext, mRCClientUpdateListener);
+        mAudioManager = mContext.getSystemService(AudioManager.class);
         mAudioManager.registerRemoteController(mRemoteController);
     }
 
@@ -133,27 +133,9 @@ public class QuickspaceController implements NotificationListener.NotificationsC
         return null;
     }
 
-    private void playbackStateUpdate(int state) {
-        boolean active;
-        switch (state) {
-            case RemoteControlClient.PLAYSTATE_PLAYING:
-                active = true;
-                break;
-            case RemoteControlClient.PLAYSTATE_ERROR:
-            case RemoteControlClient.PLAYSTATE_PAUSED:
-            default:
-                active = false;
-                break;
-        }
-        if (active != mMediaActive) {
-            mMediaActive = active;
-        }
-        updateMediaInfo();
-    }
-
     public void updateMediaInfo() {
         if (mEventsController != null) {
-            mEventsController.setMediaInfo(mMetadata.trackTitle, mMetadata.trackArtist, mClientLost, mMediaActive);
+            mEventsController.setMediaInfo(mMetadata.trackTitle, mMetadata.trackArtist, mClientLost, isMusicActive());
             mEventsController.updateQuickEvents();
             notifyListeners();
         }
@@ -232,6 +214,10 @@ public class QuickspaceController implements NotificationListener.NotificationsC
         });
     }
 
+    private boolean isMusicActive() {
+        return mAudioManager != null && mAudioManager.isMusicActive() && mCurrentTrack != null;
+    }
+
    private RemoteController.OnClientUpdateListener mRCClientUpdateListener =
             new RemoteController.OnClientUpdateListener() {
 
@@ -239,7 +225,7 @@ public class QuickspaceController implements NotificationListener.NotificationsC
         public void onClientChange(boolean clearing) {
             if (clearing) {
                 mMetadata.clear();
-                mMediaActive = false;
+                mCurrentTrack = null;
                 mClientLost = true;
             }
             updateMediaInfo();
@@ -249,13 +235,13 @@ public class QuickspaceController implements NotificationListener.NotificationsC
         public void onClientPlaybackStateUpdate(int state, long stateChangeTimeMs,
                 long currentPosMs, float speed) {
             mClientLost = false;
-            playbackStateUpdate(state);
+            updateMediaInfo();
         }
 
         @Override
         public void onClientPlaybackStateUpdate(int state) {
             mClientLost = false;
-            playbackStateUpdate(state);
+            updateMediaInfo();
         }
 
         @Override
@@ -265,6 +251,10 @@ public class QuickspaceController implements NotificationListener.NotificationsC
             mMetadata.trackArtist = data.getString(MediaMetadataRetriever.METADATA_KEY_ARTIST,
                     mMetadata.trackArtist);
             mClientLost = false;
+            if (mMetadata.trackTitle != null
+                    && !mMetadata.trackTitle.equals(mCurrentTrack)) {
+                mCurrentTrack = mMetadata.trackTitle;
+            }
             updateMediaInfo();
         }
 
