@@ -76,6 +76,7 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
     private Context mContext;
     private int mGestureAction;
     private int mGestureIntensity;
+    private long onShakeTime = 0;
 
     public Hotseat(Context context) {
         this(context, null);
@@ -357,6 +358,11 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
     }
    @Override
     public void onShake(double speed) {
+        // Prevent multiple shake callbacks
+        if (SystemClock.elapsedRealtime() - onShakeTime < 1000){
+            return;
+        }
+        onShakeTime = SystemClock.elapsedRealtime();
 	performShakeAction();
 	VibratorWrapper.INSTANCE.get(mContext).vibrate(VibratorWrapper.EFFECT_CLICK);
     }

@@ -56,7 +56,7 @@ class ShakeUtils(
         val curUpdateTime = System.currentTimeMillis()
         // Times between two shakes
         val timeInterval = curUpdateTime - mLastUpdateTime
-        if (timeInterval < (shakeIntensity * 16f)) {
+        if (timeInterval < (shakeIntensity * 14f)) {
             return
         }
         if (event.values.size < 3) {
@@ -74,7 +74,7 @@ class ShakeUtils(
         mLastZ = z
         val speed =
             sqrt((deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ).toDouble()) * 1000.0 / timeInterval
-        if (speed >= shakeIntensity * 102.4f) {
+        if (speed >= shakeIntensity * 100f) {
             startShake(speed)
         }
     }
