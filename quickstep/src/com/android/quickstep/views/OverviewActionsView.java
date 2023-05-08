@@ -265,7 +265,7 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
         } else if (key.equals(KEY_RECENTS_LENS)) {
             mLens = prefs.getBoolean(KEY_RECENTS_LENS, false);
         } else if (key.equals(KEY_RECENTS_LOCK)) {
-            mLock = prefs.getBoolean(KEY_RECENTS_LOCK, false);
+            mLock = prefs.getBoolean(KEY_RECENTS_LOCK, true);
         } else if (key.equals(KEY_RECENTS_KILL_APP)) {
             mKillApp = prefs.getBoolean(KEY_RECENTS_KILL_APP, false);
         }
