@@ -23,15 +23,15 @@
     <dimen name="quickspace_alternate_subtitle_size">16sp</dimen>
 
     <!-- Overview scrolling scale animation -->
-    <dimen name="overview_scroll_scale">0.95</dimen>
+    <dimen name="overview_scroll_scale">0.92</dimen>
 
      <!-- Meminfo in overview -->
-    <dimen name="meminfo_bottom_margin_gesture">8dp</dimen>
-    <dimen name="meminfo_bottom_margin_three_button">36dp</dimen>
+    <dimen name="meminfo_bottom_margin_gesture">0dp</dimen>
+    <dimen name="meminfo_bottom_margin_three_button">0dp</dimen>
 
     <!-- Extra bottom margin for overview TaskViews -->
-    <dimen name="overview_task_extra_top_margin">36dp</dimen>
-    <dimen name="overview_task_extra_bottom_margin">48dp</dimen>
+    <dimen name="overview_task_extra_top_margin">8dp</dimen>
+    <dimen name="overview_task_extra_bottom_margin">8dp</dimen>
 
     <!-- Overview spacing -->
     <dimen name="overview_actions_container_height">48dp</dimen>
