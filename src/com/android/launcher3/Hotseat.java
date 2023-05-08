@@ -278,21 +278,16 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
         return mAudioManager != null && mAudioManager.isMusicActive() && mCurrentTrack != null;
     }
 
-    private void sendMediaButtonClick(int keyCode) {
-        if (!mClientIdLost) {
-            mRemoteController.sendMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
-            mRemoteController.sendMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
-        } else {
-            long eventTime = SystemClock.uptimeMillis();
-            KeyEvent key = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0);
-            dispatchMediaKeyWithWakeLockToAudioService(key);
-            dispatchMediaKeyWithWakeLockToAudioService(
-                KeyEvent.changeAction(key, KeyEvent.ACTION_UP));
+    private void dispatchMediaKeyWithWakeLockToMediaSession(final int keycode) {
+        final MediaSessionLegacyHelper helper = MediaSessionLegacyHelper.getHelper(mContext);
+        if (helper == null) {
+            return;
         }
-    }
-
-    private void dispatchMediaKeyWithWakeLockToAudioService(KeyEvent event) {
-        MediaSessionLegacyHelper.getHelper(mContext).sendMediaButtonEvent(event, true);
+        KeyEvent event = new KeyEvent(SystemClock.uptimeMillis(),
+                SystemClock.uptimeMillis(), KeyEvent.ACTION_DOWN, keycode, 0);
+        helper.sendMediaButtonEvent(event, true);
+        event = KeyEvent.changeAction(event, KeyEvent.ACTION_UP);
+        helper.sendMediaButtonEvent(event, true);
     }
 
     private RemoteController.OnClientUpdateListener mRCClientUpdateListener =
@@ -349,7 +344,7 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
                 systemUtils.toggleCameraFlash();
                 break;
             case 2:
-        	sendMediaButtonClick(isMusicActive() ? KeyEvent.KEYCODE_MEDIA_NEXT : KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+        	dispatchMediaKeyWithWakeLockToMediaSession(isMusicActive() ? KeyEvent.KEYCODE_MEDIA_NEXT : KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
         	break;
             case 0:
             default:
