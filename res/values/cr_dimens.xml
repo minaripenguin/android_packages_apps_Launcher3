@@ -39,4 +39,7 @@
     <!-- Preference style -->
     <dimen name="card_margin_start_aqua">20dp</dimen>
     <dimen name="card_margin_end_aqua">20dp</dimen>
+    
+    <!-- Search bar margin -->
+    <dimen name="all_apps_search_bar_margin_top">28dp</dimen>
 </resources>
