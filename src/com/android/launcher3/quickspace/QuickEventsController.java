@@ -15,12 +15,16 @@
  */
 package com.android.launcher3.quickspace;
 
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.media.session.MediaController;
+import android.media.session.MediaSession;
+import android.media.session.MediaSessionManager;
 import android.provider.Settings;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,6 +36,8 @@ import com.android.launcher3.Utilities;
 
 import java.util.Calendar;
 import java.util.Random;
+
+import java.util.List;
 
 public class QuickEventsController {
 
@@ -178,17 +184,22 @@ public class QuickEventsController {
         mIsQuickEvent = true;
         mEventNowPlaying = true;
 
-        mEventTitleSubAction = new OnClickListener() {
+        mEventTitleSubAction = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mPlayingActive) {
-                    // Work required for local media actions
-                    Intent npIntent = new Intent(Intent.ACTION_MAIN);
-                    npIntent.addCategory(Intent.CATEGORY_APP_MUSIC);
-                    npIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    try {
-                        Launcher.getLauncher(mContext).startActivitySafely(view, npIntent, null);
-                    } catch (ActivityNotFoundException ex) {
+                    MediaSessionManager m = (MediaSessionManager) mContext.getSystemService(Context.MEDIA_SESSION_SERVICE);
+                    List<MediaController> sessions = m.getActiveSessions(null);
+                    if (sessions != null && !sessions.isEmpty()) {
+                        MediaController mediaController = sessions.get(0);
+                        MediaSession.Token token = mediaController.getSessionToken();
+                        PendingIntent sessionActivity = mediaController.getSessionActivity();
+                        Intent intent = sessionActivity.getIntent();
+                        try {
+                            mContext.startActivity(intent);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
