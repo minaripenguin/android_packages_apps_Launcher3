@@ -19,9 +19,14 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.media.AudioManager;
-import android.media.MediaMetadataRetriever;
-import android.media.RemoteControlClient;
-import android.media.RemoteController;
+import android.media.MediaMetadata;
+import android.media.session.MediaController;
+import android.media.session.MediaController.PlaybackInfo;
+import android.media.session.MediaSession;
+import android.media.session.MediaSession.QueueItem;
+import android.media.session.MediaSessionManager;
+import android.media.session.PlaybackState;
+import android.os.Bundle;
 import android.os.Handler;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
@@ -53,11 +58,14 @@ public class QuickspaceController implements NotificationListener.NotificationsC
 
     private boolean mUseImperialUnit;
 
+    private MediaController mMediaController;
+    private MediaSessionManager mSessionManager;
     private AudioManager mAudioManager;
-    private Metadata mMetadata = new Metadata();
-    private RemoteController mRemoteController;
-    private boolean mClientLost = true;
-    private String mCurrentTrack = null;
+    
+    private String mCurrentArtist;
+    private String mCurrentSongName;
+    private boolean mClientLost;
+    private boolean mSessionDestroyed;
 
     public interface OnDataListener {
         void onDataUpdated();
@@ -66,11 +74,103 @@ public class QuickspaceController implements NotificationListener.NotificationsC
     public QuickspaceController(Context context) {
         mContext = context;
         mHandler = new Handler();
-        mEventsController = new QuickEventsController(mContext);
-        mWeatherClient = new OmniJawsClient(mContext);
-        mRemoteController = new RemoteController(mContext, mRCClientUpdateListener);
-        mAudioManager = mContext.getSystemService(AudioManager.class);
-        mAudioManager.registerRemoteController(mRemoteController);
+        mEventsController = new QuickEventsController(context);
+        mWeatherClient = new OmniJawsClient(context);
+        
+        // now playing
+        mAudioManager = (AudioManager) context.getSystemService(AudioManager.class);
+        mSessionManager = (MediaSessionManager) context.getSystemService(Context.MEDIA_SESSION_SERVICE);
+    }
+
+    public void unregisterCallback() {
+    	mMediaController = getMediaController();
+       if (mMediaController != null) {
+           mMediaController.unregisterCallback(new MediaController.Callback() {});
+       }
+    }
+
+    private MediaController getMediaController() {
+        MediaController controller = null;
+        if (mSessionManager != null) {
+            for (MediaController activeController : mSessionManager.getActiveSessions(null)) {
+            	PlaybackState state = activeController.getPlaybackState();
+                if (state != null && state.getState() == PlaybackState.STATE_PLAYING) {
+                    controller = activeController;
+                    break;
+                }
+            }
+        }
+        return controller;
+    }
+
+    public void registerCallback() {
+    	mMediaController = getMediaController();
+        if (mMediaController != null) {
+            mMediaController.registerCallback(new MediaController.Callback() {
+                @Override
+                public void onSessionDestroyed() {
+                    mClientLost = true;
+                    mSessionDestroyed = true;
+                    updateMediaInfo();
+                }
+                @Override
+                public void onSessionEvent(String event, Bundle extras) {
+                    updateMediaInfo();
+                }
+                @Override
+                public void onQueueChanged(List<MediaSession.QueueItem> queue) {
+                    updateMediaInfo();
+                }
+                @Override
+                public void onQueueTitleChanged(CharSequence title) {
+                    updateMediaInfo();
+                }
+                @Override
+                public void onExtrasChanged(Bundle extras) {
+                    updateMediaInfo();
+                }
+                @Override
+                public void onAudioInfoChanged(PlaybackInfo info) {
+                    updateMediaInfo();
+                }
+                @Override
+                public void onPlaybackStateChanged(PlaybackState state) {
+		    	switch (state.getState()) {
+		        case PlaybackState.STATE_PLAYING:
+		            mClientLost = false;
+		            mSessionDestroyed = false;
+		            break;
+		        case PlaybackState.STATE_PAUSED:
+		        case PlaybackState.STATE_STOPPED:
+		        case PlaybackState.STATE_ERROR:
+		            mClientLost = true;
+		            break;
+		        default:
+		            break;
+        	       }
+        	       updateMediaInfo();
+        	}
+                @Override
+                public void onMetadataChanged(MediaMetadata metadata) {
+                    mCurrentSongName = metadata != null ? metadata.getString(MediaMetadata.METADATA_KEY_TITLE) : null;
+                    mCurrentArtist = metadata != null ? metadata.getString(MediaMetadata.METADATA_KEY_ARTIST) : null;
+                    mClientLost = metadata == null || mCurrentSongName == null || mCurrentArtist == null;
+                    updateMediaInfo();
+                }
+            });
+        }
+    }
+
+    private boolean isMusicActive() {
+        if (mSessionManager != null) {
+             for (MediaController activeController : mSessionManager.getActiveSessions(null)) {
+                PlaybackState state = activeController.getPlaybackState();
+                if (state != null && state.getState() == PlaybackState.STATE_PLAYING) {
+                        return true;
+                    }
+                }
+        }
+        return false;
     }
 
     private void addWeatherProvider() {
@@ -82,6 +182,7 @@ public class QuickspaceController implements NotificationListener.NotificationsC
     public void addListener(OnDataListener listener) {
         mListeners.add(listener);
         addWeatherProvider();
+        registerCallback(); 
         listener.onDataUpdated();
     }
 
@@ -133,9 +234,15 @@ public class QuickspaceController implements NotificationListener.NotificationsC
         return null;
     }
 
-    public void updateMediaInfo() {
+    private void updateMediaInfo() {
+    	mMediaController = getMediaController();
+        MediaMetadata metadata = mMediaController != null ? mMediaController.getMetadata() : null;
+        mCurrentSongName = metadata != null ? metadata.getString(MediaMetadata.METADATA_KEY_TITLE) : null;
+        mCurrentArtist = metadata != null ? metadata.getString(MediaMetadata.METADATA_KEY_ARTIST) : null;
+        mClientLost = metadata == null || mCurrentSongName == null || mCurrentArtist == null;
+
         if (mEventsController != null) {
-            mEventsController.setMediaInfo(mMetadata.trackTitle, mMetadata.trackArtist, mClientLost, isMusicActive());
+            mEventsController.setMediaInfo(mCurrentSongName, mCurrentArtist, mClientLost, isMusicActive());
             mEventsController.updateQuickEvents();
             notifyListeners();
         }
@@ -159,11 +266,13 @@ public class QuickspaceController implements NotificationListener.NotificationsC
     }
 
     public void onPause() {
+    	unregisterCallback();
         if (mEventsController != null) mEventsController.onPause();
     }
 
     public void onResume() {
         if (mEventsController != null) {
+            registerCallback();
             updateMediaInfo();
             mEventsController.onResume();
             notifyListeners();
@@ -208,68 +317,10 @@ public class QuickspaceController implements NotificationListener.NotificationsC
             @Override
             public void run() {
                 for (OnDataListener list : mListeners) {
+                    registerCallback(); 
                     list.onDataUpdated();
                 }
             }
         });
-    }
-
-    private boolean isMusicActive() {
-        return mAudioManager != null && mAudioManager.isMusicActive() && mCurrentTrack != null;
-    }
-
-   private RemoteController.OnClientUpdateListener mRCClientUpdateListener =
-            new RemoteController.OnClientUpdateListener() {
-
-        @Override
-        public void onClientChange(boolean clearing) {
-            if (clearing) {
-                mMetadata.clear();
-                mCurrentTrack = null;
-                mClientLost = true;
-            }
-            updateMediaInfo();
-        }
-
-        @Override
-        public void onClientPlaybackStateUpdate(int state, long stateChangeTimeMs,
-                long currentPosMs, float speed) {
-            mClientLost = false;
-            updateMediaInfo();
-        }
-
-        @Override
-        public void onClientPlaybackStateUpdate(int state) {
-            mClientLost = false;
-            updateMediaInfo();
-        }
-
-        @Override
-        public void onClientMetadataUpdate(RemoteController.MetadataEditor data) {
-            mMetadata.trackTitle = data.getString(MediaMetadataRetriever.METADATA_KEY_TITLE,
-                    mMetadata.trackTitle);
-            mMetadata.trackArtist = data.getString(MediaMetadataRetriever.METADATA_KEY_ARTIST,
-                    mMetadata.trackArtist);
-            mClientLost = false;
-            if (mMetadata.trackTitle != null
-                    && !mMetadata.trackTitle.equals(mCurrentTrack)) {
-                mCurrentTrack = mMetadata.trackTitle;
-            }
-            updateMediaInfo();
-        }
-
-        @Override
-        public void onClientTransportControlUpdate(int transportControlFlags) {
-        }
-    };
-
-    class Metadata {
-        private String trackTitle;
-        private String trackArtist;
-
-         public void clear() {
-            trackTitle = null;
-            trackArtist = null;
-        }
     }
 }
