@@ -23,7 +23,10 @@ import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.media.RemoteController;
+import android.media.session.MediaController;
+import android.media.session.MediaSessionManager;
 import android.media.session.MediaSessionLegacyHelper;
+import android.media.session.PlaybackState;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ServiceManager;
@@ -47,6 +50,8 @@ import androidx.annotation.Nullable;
 
 import java.util.function.Consumer;
 
+import java.util.List;
+
 /**
  * View class that represents the bottom row of the home screen.
  */
@@ -65,13 +70,11 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
     private final View mQsb;
     
     private ShakeUtils mShakeUtils;
-    private final AudioManager mAudioManager;
+    private AudioManager mAudioManager;
+    private MediaSessionManager mSessionManager;
 
     private boolean mClientIdLost = true;
     private String mCurrentTrack = null;
-
-    private Metadata mMetadata = new Metadata();
-    private RemoteController mRemoteController;
     
     private Context mContext;
     private int mGestureAction;
@@ -100,9 +103,8 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
         }
         addView(mQsb);
         
-        mRemoteController = new RemoteController(mContext, mRCClientUpdateListener);
-        mAudioManager = mContext.getSystemService(AudioManager.class);
-        mAudioManager.registerRemoteController(mRemoteController);
+        mAudioManager = (AudioManager) mContext.getSystemService(AudioManager.class);
+        mSessionManager = (MediaSessionManager) mContext.getSystemService(Context.MEDIA_SESSION_SERVICE);
 
 	mGestureAction = Utilities.shakeGestureAction(mContext);
         mGestureIntensity = Utilities.shakeGestureActionIntensity(mContext);
@@ -275,7 +277,16 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
     }
 
     private boolean isMusicActive() {
-        return mAudioManager != null && mAudioManager.isMusicActive() && mCurrentTrack != null;
+        if (mSessionManager != null) {
+            List<MediaController> controllers = mSessionManager.getActiveSessions(null);
+            for (MediaController controller : controllers) {
+                PlaybackState state = controller.getPlaybackState();
+                if (state != null && state.getState() == PlaybackState.STATE_PLAYING) {
+                        return true;
+                    }
+                }
+        }
+        return mAudioManager != null && mAudioManager.isMusicActive();
     }
 
     private void dispatchMediaKeyWithWakeLockToMediaSession(final int keycode) {
@@ -288,54 +299,6 @@ public class Hotseat extends CellLayout implements Insettable, ShakeUtils.OnShak
         helper.sendMediaButtonEvent(event, true);
         event = KeyEvent.changeAction(event, KeyEvent.ACTION_UP);
         helper.sendMediaButtonEvent(event, true);
-    }
-
-    private RemoteController.OnClientUpdateListener mRCClientUpdateListener =
-            new RemoteController.OnClientUpdateListener() {
-
-        @Override
-        public void onClientChange(boolean clearing) {
-            if (clearing) {
-                mMetadata.clear();
-                mCurrentTrack = null;
-                mClientIdLost = true;
-            }
-        }
-
-        @Override
-        public void onClientPlaybackStateUpdate(int state, long stateChangeTimeMs,
-                long currentPosMs, float speed) {
-            mClientIdLost = false;
-        }
-
-        @Override
-        public void onClientPlaybackStateUpdate(int state) {
-            mClientIdLost = false;
-        }
-
-
-        @Override
-        public void onClientMetadataUpdate(RemoteController.MetadataEditor data) {
-            mMetadata.trackTitle = data.getString(MediaMetadataRetriever.METADATA_KEY_TITLE,
-                    mMetadata.trackTitle);
-            mClientIdLost = false;
-            if (mMetadata.trackTitle != null
-                    && !mMetadata.trackTitle.equals(mCurrentTrack)) {
-                mCurrentTrack = mMetadata.trackTitle;
-            }
-        }
-
-        @Override
-        public void onClientTransportControlUpdate(int transportControlFlags) {
-        }
-    };
-
-    class Metadata {
-        private String trackTitle;
-
-        public void clear() {
-            trackTitle = null;
-        }
     }
 
     public void performShakeAction() {
