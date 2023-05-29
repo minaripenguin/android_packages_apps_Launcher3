@@ -360,7 +360,9 @@
     <!-- QSB -->
     <string name="qsb_search_hint">Search this phone and more…</string>
 
-    <!-- Shake Actions -->
+    <!-- Gestures -->
+    <string name="gestures_category_title">Gestures settings</string>
+    <string name="gestures_category_summary">Configure shake gesture settings</string>
     <string name="shake_clear_summary">Or Shake phone to clear recents</string>
     <string name="shake_clear_intensity_title">Shake phone to clear recents intensity</string>
     <string name="shake_gesture_actions_title">Shake gesture actions</string>
