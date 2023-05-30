@@ -118,16 +118,26 @@ public class QuickSpaceView extends FrameLayout implements AnimatorUpdateListene
         boolean isPersonalityEnabledOrNowPlaying = isPersonalityEnabled || isNowPlaying;
 
         if (useAlternativeQuickspaceUI) {
-            mGreetingsExt.setVisibility(View.VISIBLE);
             String greetings = mController.getEventController().getGreetings();
-            mGreetingsExt.setText(greetings != null ? greetings : "");
-            mGreetingsExt.setEllipsize(TextUtils.TruncateAt.END);
-            mGreetingsExt.setOnClickListener(mController.getEventController().getAction());
+            boolean hasGreetings = greetings != null && !greetings.isEmpty();
+            if (hasGreetings) {
+                mGreetingsExt.setVisibility(View.VISIBLE);
+                mGreetingsExt.setText(greetings);
+                mGreetingsExt.setEllipsize(TextUtils.TruncateAt.END);
+                mGreetingsExt.setOnClickListener(mController.getEventController().getAction());
+            } else {
+                mGreetingsExt.setVisibility(View.GONE);
+            }
 
             String clockExt = mController.getEventController().getClockExt();
-            boolean hasClockExt = !TextUtils.isEmpty(clockExt);
-            mGreetingsExtClock.setVisibility(hasClockExt ? View.VISIBLE : View.GONE);
-            mGreetingsExtClock.setText(hasClockExt ? clockExt : "");
+            boolean hasClockExt = clockExt != null && !clockExt.isEmpty();
+            if (hasClockExt) {
+                mGreetingsExtClock.setVisibility(View.VISIBLE);
+                mGreetingsExtClock.setText(clockExt);
+                mGreetingsExtClock.setOnClickListener(mController.getEventController().getAction());
+            } else {
+                mGreetingsExtClock.setVisibility(View.GONE);
+            }
         }
 
         if (isPersonalityEnabledOrNowPlaying) {
@@ -136,14 +146,18 @@ public class QuickSpaceView extends FrameLayout implements AnimatorUpdateListene
             mEventTitle.setSelected(true);
             mEventTitle.setOnClickListener(mController.getEventController().getAction());
 
-            mEventTitleSub.setVisibility(View.VISIBLE);
             String actionTitle = mController.getEventController().getActionTitle();
-            boolean hasActionTitle = actionTitle != null;
-            mEventTitleSub.setText(hasActionTitle ? actionTitle : "");
-            mEventTitleSub.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-            mEventTitleSub.setMarqueeRepeatLimit(3);
-            mEventTitleSub.setSelected(true);
-            mEventTitleSub.setOnClickListener(mController.getEventController().getAction());
+            boolean hasActionTitle = actionTitle != null && !actionTitle.isEmpty();
+            if (hasActionTitle) {
+                mEventTitleSub.setVisibility(View.VISIBLE);
+                mEventTitleSub.setText(actionTitle);
+                mEventTitleSub.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                mEventTitleSub.setMarqueeRepeatLimit(3);
+                mEventTitleSub.setSelected(true);
+                mEventTitleSub.setOnClickListener(mController.getEventController().getAction());
+            } else {
+                mEventTitleSub.setVisibility(View.GONE);
+            }
 
             if (useAlternativeQuickspaceUI) {
                 if (isNowPlaying) {
@@ -156,17 +170,25 @@ public class QuickSpaceView extends FrameLayout implements AnimatorUpdateListene
                     mEventTitleSubColored.setOnClickListener(mController.getEventController().getAction());
                     mNowPlayingIcon.setOnClickListener(mController.getEventController().getAction());
                 } else {
-                    mEventSubIcon.setVisibility(View.VISIBLE);
-                    mEventSubIcon.setImageTintList(mColorStateList);
-                    mEventSubIcon.setImageResource(mController.getEventController().getActionIcon());
+                    if (hasActionTitle) {
+                        mEventSubIcon.setVisibility(View.VISIBLE);
+                        mEventSubIcon.setImageTintList(mColorStateList);
+                        mEventSubIcon.setImageResource(mController.getEventController().getActionIcon());
+                    } else {
+                        mEventSubIcon.setVisibility(View.GONE);
+                    }
                     mEventTitleSubColored.setVisibility(View.GONE);
                     mNowPlayingIcon.setVisibility(View.GONE);
                 }
             } else {
-                mEventSubIcon.setVisibility(View.VISIBLE);
-                mEventSubIcon.setImageTintList(mColorStateList);
-                mEventSubIcon.setImageResource(mController.getEventController().getActionIcon());
-                mEventSubIcon.setOnClickListener(mController.getEventController().getAction());
+                if (isNowPlaying || hasActionTitle) {
+                    mEventSubIcon.setVisibility(View.VISIBLE);
+                    mEventSubIcon.setImageTintList(mColorStateList);
+                    mEventSubIcon.setImageResource(mController.getEventController().getActionIcon());
+                    mEventSubIcon.setOnClickListener(mController.getEventController().getAction());
+                } else {
+                    mEventSubIcon.setVisibility(View.GONE);
+                }
             }
         } else {
             mEventTitleSub.setVisibility(View.GONE);
@@ -181,16 +203,22 @@ public class QuickSpaceView extends FrameLayout implements AnimatorUpdateListene
     }
 
     private void bindWeather(View container, TextView title, ImageView icon) {
-        if (container != null && title != null && icon != null) {
-            if (!mWeatherAvailable || mController.getEventController().isNowPlaying() || mController.getWeatherTemp() == null || mController.getWeatherTemp().isEmpty()) {
-                container.setVisibility(View.GONE);
-            } else {
-                boolean hasGoogleApp = isPackageEnabled("com.google.android.googlequicksearchbox", mContext);
-                container.setVisibility(View.VISIBLE);
-                container.setOnClickListener(hasGoogleApp ? mActionReceiver.getWeatherAction() : null);
-                title.setText(mController.getWeatherTemp());
-                icon.setImageDrawable(mController.getWeatherIcon());
-            }
+        if (container == null && title == null && icon == null) {
+            return;
+        }
+
+        String weatherTemp = mController.getWeatherTemp();
+        boolean isNowPlaying = mController.getEventController().isNowPlaying();
+        boolean hasWeather = weatherTemp != null && !weatherTemp.isEmpty();
+
+        if (mWeatherAvailable && hasWeather && !isNowPlaying) {
+            boolean hasGoogleApp = isPackageEnabled("com.google.android.googlequicksearchbox", mContext);
+            container.setVisibility(View.VISIBLE);
+            container.setOnClickListener(hasGoogleApp ? mActionReceiver.getWeatherAction() : null);
+            title.setText(weatherTemp);
+            icon.setImageDrawable(mController.getWeatherIcon());
+        } else {
+            container.setVisibility(View.GONE);
         }
     }
 
@@ -207,10 +235,8 @@ public class QuickSpaceView extends FrameLayout implements AnimatorUpdateListene
         mWeatherContentSub = (ViewGroup) findViewById(R.id.quick_event_weather_content);
         mWeatherTemp = (TextView) findViewById(R.id.weather_temp);
         mWeatherTempSub = (TextView) findViewById(R.id.quick_event_weather_temp);
-        if (Utilities.useAlternativeQuickspaceUI(mContext)) {
-            mGreetingsExtClock = (TextView) findViewById(R.id.extended_greetings_clock);
-            mGreetingsExt = (TextView) findViewById(R.id.extended_greetings);
-        }
+        mGreetingsExtClock = (TextView) findViewById(R.id.extended_greetings_clock);
+        mGreetingsExt = (TextView) findViewById(R.id.extended_greetings);
     }
 
     private void prepareLayout() {
