@@ -105,8 +105,11 @@ public class QuickSpaceView extends FrameLayout implements AnimatorUpdateListene
     }
 
     private final void loadDoubleLine() {
+        if (!mAttached) return;
         setBackgroundResource(mQuickspaceBackgroundRes);
-        mEventTitle.setText(mController.getEventController().getTitle());
+        if (mEventTitle != null) { 
+            mEventTitle.setText(mController.getEventController().getTitle());
+        }
 
         boolean useAlternativeQuickspaceUI = Utilities.useAlternativeQuickspaceUI(mContext);
         boolean isPersonalityEnabled = Utilities.isQuickspacePersonalityEnabled(mContext);
