@@ -16,21 +16,15 @@
 package com.android.launcher3.util;
 
 import static android.os.VibrationEffect.createPredefined;
-import static android.provider.Settings.System.HAPTIC_FEEDBACK_ENABLED;
-
-import static com.android.launcher3.util.Executors.MAIN_EXECUTOR;
 import static com.android.launcher3.util.Executors.UI_HELPER_EXECUTOR;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.ContentObserver;
 import android.media.AudioAttributes;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.provider.Settings;
 
 import com.android.launcher3.Utilities;
 import com.android.launcher3.util.MainThreadInitializedObject;
@@ -49,13 +43,17 @@ public class VibratorWrapper {
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build();
 
+    public static final VibrationEffect EFFECT_TEXTURE_TICK =
+            createPredefined(VibrationEffect.EFFECT_TEXTURE_TICK);
+
+    public static final VibrationEffect EFFECT_TICK =
+            createPredefined(VibrationEffect.EFFECT_TICK);
+
     public static final VibrationEffect EFFECT_CLICK =
             createPredefined(VibrationEffect.EFFECT_CLICK);
 
-    /**
-     * Haptic when entering overview.
-     */
-    public static final VibrationEffect OVERVIEW_HAPTIC = EFFECT_CLICK;
+    public static final VibrationEffect EFFECT_HEAVY_CLICK =
+            createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK);
 
     private final Vibrator mVibrator;
     private final boolean mHasVibrator;
@@ -65,24 +63,32 @@ public class VibratorWrapper {
     public VibratorWrapper(Context context) {
         mVibrator = context.getSystemService(Vibrator.class);
         mHasVibrator = mVibrator.hasVibrator();
-        if (mHasVibrator) {
-            final ContentResolver resolver = context.getContentResolver();
-            mIsHapticFeedbackEnabled = isHapticFeedbackEnabled(resolver);
-            final ContentObserver observer = new ContentObserver(MAIN_EXECUTOR.getHandler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    mIsHapticFeedbackEnabled = isHapticFeedbackEnabled(resolver);
-                }
-            };
-            resolver.registerContentObserver(Settings.System.getUriFor(HAPTIC_FEEDBACK_ENABLED),
-                    false /* notifyForDescendents */, observer);
-        } else {
-            mIsHapticFeedbackEnabled = false;
-        }
+        int vibIntensity = Utilities.getVibrationIntensity(context);
+        mIsHapticFeedbackEnabled = vibIntensity != 0;
     }
 
-    private boolean isHapticFeedbackEnabled(ContentResolver resolver) {
-        return Settings.System.getInt(resolver, HAPTIC_FEEDBACK_ENABLED, 0) == 1;
+    public static VibrationEffect getVibrationIntensity(Context context) {
+        VibrationEffect effect;
+        int vibIntensity = Utilities.getVibrationIntensity(context);
+        switch (vibIntensity) {
+            case 1:
+                effect = EFFECT_TEXTURE_TICK;
+                break;
+            case 2: 
+                effect = EFFECT_TICK;
+                break;
+            case 3:
+                effect = EFFECT_CLICK;
+                break;
+            case 4:
+                effect = EFFECT_HEAVY_CLICK;
+                break;
+            default:
+                effect = EFFECT_TICK;
+                break;
+        }
+        
+        return effect;
     }
 
     /** Vibrates with the given effect if haptic feedback is available and enabled. */

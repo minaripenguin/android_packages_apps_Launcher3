@@ -204,7 +204,7 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
     public void onShake(double speed) {
         if (mCallbacks != null && findViewById(R.id.action_clear_all).getVisibility() == VISIBLE) {
             mCallbacks.onClearAllTasksRequested();
-            VibratorWrapper.INSTANCE.get(mContext).vibrate(VibratorWrapper.EFFECT_CLICK);
+            VibratorWrapper.INSTANCE.get(mContext).vibrate(VibratorWrapper.getVibrationIntensity(mContext));
             setCallbacks(null); // Clear the listener after shake
         }
     }
@@ -235,7 +235,7 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
             mCallbacks.onSplit();
         } else if (id == R.id.action_clear_all) {
             mCallbacks.onClearAllTasksRequested();
-            VibratorWrapper.INSTANCE.get(mContext).vibrate(VibratorWrapper.EFFECT_CLICK);
+            VibratorWrapper.INSTANCE.get(mContext).vibrate(VibratorWrapper.getVibrationIntensity(mContext));
         } else if (id == R.id.action_lens) {
             mCallbacks.onLens();
         } else if (id == R.id.kill_app) {
